@@ -7,8 +7,18 @@ from django.conf.urls.static import static
 
 
 urlpatterns = [
+    
+    # Admin url
+    
     path('admin/', admin.site.urls),
+    
+    # Store url
+    
     path('', include("store.urls")),
+    
+    # Cart url
+    
+    path('cart/', include("cart.urls")),
 ]
 
 
