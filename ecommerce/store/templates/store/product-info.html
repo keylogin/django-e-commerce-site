@@ -72,7 +72,7 @@
 
                             <div class="col-6 text-end">
                                 
-                                <button type="button" id="add-button" value="" class="btn btn-secondary btn-sm">
+                                <button type="button" id="add-button" value="" class="btn btn-dark btn-sm">
                         
                                 Add to cart 
                             
@@ -96,5 +96,82 @@
     <br>
 
 </div>
+
+
+
+<script>
+
+    
+
+    {% comment %} $(document).on('click', '#add-button', function(e){
+
+        e.preventDefault();
+
+        $.ajax({
+
+            type: 'POST',
+            url: '{% url "cart-add" %}',
+            data: {
+                product_id: $('#add-button').val(),
+                product_quantity: $('#select option:selected').text(),
+                csrfmiddlewaretoken: "{% csrf_token %}",
+                action: 'post ',
+            
+            },
+
+            success: function(json){
+
+
+            },
+            
+            error: function(xhr, errmsg, err){
+
+
+            }
+
+
+        });
+
+    }) {% endcomment %}
+
+    $('#add-button').on('click', function(e) {
+        e.preventDefault();
+            var productId = {{ product.id }}; // set the product ID value
+            var productQuantity = parseInt($('#select option:selected').text()); // convert the selected option text to an integer
+            var csrfToken = "{{ csrf_token }}"; // set the CSRF token value
+        $.ajax({
+            type: 'POST',
+            url: '{% url "cart-add" %}',
+            data: {
+                product_id: productId,
+                product_quantity: productQuantity,
+                csrfmiddlewaretoken: csrfToken,
+                action: 'post'
+            },
+
+          
+            success: function(json) {
+            
+                console.log(json);
+
+                document.getElementById("cart-quantity").textContent = json.quantity;
+                // handle success response
+            },
+
+
+            error: function(xhr, errmsg, err) {
+                // handle error response
+                console.error(errmsg);
+
+
+            }
+
+        });
+
+    });
+    
+
+</script>
+
 
 {% endblock %}
