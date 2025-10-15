@@ -16,21 +16,29 @@
 	<hr>
       
       <br>
-
-      <div class="row mb-4 border product-item">
+      {% if cart|length == 0 %}
+          <p>Your cart is empty. <a href="#">Continue shopping</a></p>
+      {% else %}
+      
+      {% for item in cart %}
+      <div class="row mb-4 border product-item" id="cart-item-{{ item.product.id }}">
         
-        <div class="col-md-3 col-lg-2 order-md-first bg-light">
-        
-            <img class="img-fluid mx-auto d-block" width="200px" alt="Responsive image" src=""> <!-- Product image -->
+        <div class="col-md-2 col-lg-3 order-md-first bg-light">        
+            <img 
+              class="img-fluid mx-auto d-block" 
+              style="max-width: 200px; height: auto; object-fit: cover;" 
+              alt="{{ item.product.title }}" 
+              src="{{ item.product.image.url }}"
+            >
         
         </div>
 
         
         <div class="col-md-9 col-lg-10 ps-md-3 ps-lg-10">
           
-          <a href="" class="text-decoration-none text-reset"> <!-- Product get absolute url -->
+          <a href="{{ item.product.get_absolute_url }}" class="text-decoration-none text-reset"> 
           
-            <h1 class="h5 pt-2"> <!-- Product title --> </h1>
+            <h1 class="h5 pt-2"> {{ item.product.title }} </h1>
           
           </a>
           
@@ -40,9 +48,9 @@
               
                 <div class="row p-3">
               
-                <div class="col-6"> Product </div>
+                <div class="col-6"> Price: </div>
               
-                <div class="col-6 text-end"><span class="h6 fw-bold">$ <!-- Product price --> </span></div>
+                <div class="col-6 text-end"><span class="h6 fw-bold">${{ item.price|floatformat:2 }} </span></div> 
             
               </div>
             
@@ -58,38 +66,36 @@
 
                   &nbsp; 
                   
-                  <select id="">
+                  <select id="select-{{ item.product.id }}" data-product-id="{{ item.product.id}}" class="form-select-sm qty-select">
                   
-                    <option selected>
+                    <option selected value="{{ item.qty }}">
                   
                         {{item.qty}}
                   
                     </option>
-                  
-                    <option value="">1</option>
-                  
-                    <option value="">2</option>
-                  
-                    <option value="">3</option>
-                  
-                    <option value="">4</option>
-                  
+
+                    {% for i in "123456789"|make_list %}
+                        {% if i|safe != item.qty|safe %}
+                            <option value="{{ i }}">{{ i }}</option>
+                        {% endif %}
+                    {% endfor %}
+
                   </select>
-                  
+
                   <br> <br>
 
-                  <button type="button" id="update-button"
+                  <button type="button" 
+                    data-index="{{ item.product.id }}"
                     class="btn btn-primary btn-sm update-button">
                     Update
-                  
                   </button>
                   
                   &nbsp;
 
-                  <button type="button" id="delete-button"
+                  <button type="button"
+                    data-index="{{ item.product.id }}"
                     class="btn btn-danger btn-sm delete-button">
                     Delete
-        
                   </button>
         
 
@@ -98,18 +104,16 @@
             </div>
         
             </div>
-    
-            </div>
-    
-        </div>
-      
-    </div>
       
 
 
-      <div class="col-12 text-end">
+      <div class="col border-top">
  
-        <div class="h6 fw-bold"> Sub total: $ <div id="total" class="d-inline-flex"> <!-- cart.get_total --> </div></div>
+        <div class="row p-3">
+
+          <div class="col-6"> Subtotal: </div>
+
+          <div class="col-6 text-end"><span class="h6 fw-bold" id="subtotal-{{ item.product.id }}">${{ item.subtotal|floatformat:2 }} </span></div>
  
       </div>
  
@@ -117,7 +121,112 @@
     </div>
   
 
+  </div>
+</div>
+</div>
+ {% endfor %}
+
+
+    <div class="col-10   text-end">
+    <div class="d-inline-block border border-dark p-4 rounded">
+        <div class="h5 fw-bold mb-0"> 
+            Total Coș: $ <span id="total"> {{ cart.get_total_price|floatformat:2 }} </span>
+        </div>
+    </div>
+</div>
+    
+    {% endif %}
+ 
+
+    </div>
+    
+    
+    <script>
+        // Functie de a obtine tokenul CSRF
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.startsWith(name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        
+        // --- LOGICA PENTRU DELETE ---
+        
+        document.querySelectorAll('.delete-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const productId = this.dataset.index; // index = product_id
+
+                fetch("{% url 'cart-delete' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `action=post&product_id=${productId}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Elimină elementul vizual
+                    document.getElementById(`cart-item-${productId}`).remove();
+                    
+                    // 2. Actualizează totalul coșului
+                    document.getElementById('total').textContent = `${parseFloat(data.total).toFixed(2)}`;
+                    
+                    // 3. Actualizează cantitatea totala a coșului (dacă e afișată în antet/base.html)
+                    // Puteți adăuga o linie de cod aici pentru a actualiza un element global
+                })
+                .catch(error => console.error('Eroare la ștergere:', error));
+            });
+        });
+
+        
+        // --- LOGICA PENTRU UPDATE (Declanșată de buton) ---
+        
+        document.querySelectorAll('.update-button').forEach(button => {
+            button.addEventListener('click', function(e) {
+                const productId = this.dataset.index;
+                // Găsește valoarea selectată din dropdown-ul asociat
+                const selectElement = document.getElementById(`select-${productId}`);
+                const newQuantity = selectElement.value;
+                
+                fetch("{% url 'cart-update' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'X-CSRFToken': csrftoken
+                    },
+                    body: `action=post&product_id=${productId}&product_quantity=${newQuantity}`
+                })
+                .then(response => response.json())
+                .then(data => {
+                    // 1. Actualizează subtotalul produsului
+                    document.getElementById(`subtotal-${productId}`).textContent = `$${parseFloat(data.subtotal).toFixed(2)}`;
+                    
+                    // 2. Actualizează totalul coșului
+                    document.getElementById('total').textContent = `${parseFloat(data.total).toFixed(2)}`;
+                    
+                    // 3. Actualizează cantitatea totala a coșului (dacă e afișată undeva)
+                    // Puteți adăuga o linie de cod aici
+                })
+                .catch(error => console.error('Eroare la actualizare:', error));
+            });
+        });
+
+    </script>
+
+
  </main>
+
 
 
 

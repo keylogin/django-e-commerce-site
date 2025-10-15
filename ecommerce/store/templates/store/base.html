@@ -115,20 +115,28 @@
             
             <ul class="navbar-nav ms-auto">
 
+                {% if user.is_authenticated %}
+    
+                    <li class="nav-item">
+                    <a class="btn btn-alert navbar-btn text-white" type="button" href="{% url 'logout' %}"> Deconectare ({{ user.username }}) </a>
+                    </li>
 
-                <li class="nav-item">
+                {% else %}
+
+                    <li class="nav-item">
             
-                    <a class="btn btn-alert navbar-btn text-white" type="button"  href="/"> Register </a>
+                    <a class="btn btn-alert navbar-btn text-white" type="button"  href="{% url "register" %}"> Register </a>
 
-                </li>
+                    </li>
 
 
-                <li class="nav-item">
+                    <li class="nav-item">
 
-                    <a class="btn btn-alert navbar-btn text-white" type="button"  href="/"> Login </a>
+                    <a class="btn btn-alert navbar-btn text-white" type="button"  href="{% url "login" %}"> Login </a>
 
-                </li>
-
+                    </li>
+                
+                {% endif %}
 
                 &nbsp; &nbsp; &nbsp;
 
@@ -177,23 +185,24 @@
 
     </nav>
 
+<body>
 
-    <body>
-
-
+        <div class="container mt-4">
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
         {% block content %} 
         
         
-
-
-
-
-
-            
         {% endblock %}
     
         
-
 
     </body>
 

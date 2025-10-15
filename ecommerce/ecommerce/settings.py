@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     'store', # Django App
 
     'cart', # Django App
+    
+    'account', # Account App
 ]
 
 MIDDLEWARE = [
@@ -88,6 +90,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': tmpPostgres.path.replace('/', ''),
+        # 'NAME': tmpPostgres.path.decode('utf-8').replace('/', ''),
         'USER': tmpPostgres.username,
         'PASSWORD': tmpPostgres.password,
         'HOST': tmpPostgres.hostname,
@@ -143,3 +146,8 @@ MEDIA_ROOT = BASE_DIR / 'static/media'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# Account APP
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/'

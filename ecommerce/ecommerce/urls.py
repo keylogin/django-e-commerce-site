@@ -19,6 +19,10 @@ urlpatterns = [
     # Cart url
     
     path('cart/', include("cart.urls")),
+    
+    # Account url
+    
+    path('account/', include("account.urls")),
 ]
 
 
